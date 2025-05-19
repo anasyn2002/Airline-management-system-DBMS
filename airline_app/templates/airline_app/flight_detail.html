@@ -1,0 +1,217 @@
+<!-- templates/airline_app/flight_detail.html -->
+{% extends 'airline_app/base.html' %}
+
+{% block header %}Flight Details{% endblock %}
+
+{% block content %}
+<!-- Flight Info Card -->
+<div class="bg-white rounded-lg shadow-md overflow-hidden mb-6">
+    <div class="bg-blue-50 px-6 py-4 border-b border-gray-200 flex justify-between items-center">
+        <h2 class="text-xl font-semibold text-gray-800">Flight {{ flight.flight_number }}</h2>
+        <div class="flex space-x-2">
+            <a href="{% url 'flight-update' flight.pk %}" class="bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium py-2 px-4 rounded transition-colors">
+                Edit
+            </a>
+            <!-- Add boarding passes button -->
+            <a href="{% url 'boarding-pass-create' %}?flight={{ flight.pk }}" class="bg-green-600 hover:bg-green-700 text-white text-sm font-medium py-2 px-4 rounded transition-colors">
+                Create Boarding Pass
+            </a>
+        </div>
+    </div>
+    <div class="p-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+                <h3 class="text-lg font-medium text-gray-900 mb-4">Flight Information</h3>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <p class="text-sm text-gray-500">Flight Number</p>
+                        <p class="text-base font-medium">{{ flight.flight_number }}</p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-500">Aircraft</p>
+                        <p class="text-base font-medium">{{ flight.aircraft.model }}</p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-500">Airline</p>
+                        <p class="text-base font-medium">{{ flight.aircraft.airline }}</p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-500">Capacity</p>
+                        <p class="text-base font-medium">{{ flight.aircraft.capacity }} passengers</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div>
+                <h3 class="text-lg font-medium text-gray-900 mb-4">Route Information</h3>
+                <div class="flex items-center justify-between mb-6">
+                    <div class="text-center">
+                        <p class="text-sm text-gray-500">From</p>
+                        <p class="text-xl font-bold">{{ flight.source_airport.airport_name }}</p>
+                        <p class="text-sm">{{ flight.source_airport.location }}, {{ flight.source_airport.country }}</p>
+                    </div>
+                    
+                    <div class="flex-1 px-4">
+                        <div class="flex items-center justify-center">
+                            <div class="h-1 bg-gray-300 flex-grow"></div>
+                            <svg class="mx-2 text-gray-400 w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
+                            </svg>
+                            <div class="h-1 bg-gray-300 flex-grow"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="text-center">
+                        <p class="text-sm text-gray-500">To</p>
+                        <p class="text-xl font-bold">{{ flight.destination_airport.airport_name }}</p>
+                        <p class="text-sm">{{ flight.destination_airport.location }}, {{ flight.destination_airport.country }}</p>
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <p class="text-sm text-gray-500">Departure</p>
+                        <p class="text-base font-medium">{{ flight.departure_time|date:"H:i, d M Y" }}</p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-500">Arrival</p>
+                        <p class="text-base font-medium">{{ flight.arrival_time|date:"H:i, d M Y" }}</p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-500">Duration</p>
+                        <p class="text-base font-medium">
+                            {% with duration=flight.arrival_time|timeuntil:flight.departure_time %}
+                                {{ duration }}
+                            {% endwith %}
+                        </p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-500">Status</p>
+                        {% if flight.departure_time > now %}
+                        <span class="px-2 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800">
+                            Scheduled
+                        </span>
+                        {% elif flight.departure_time <= now and flight.arrival_time > now %}
+                        <span class="px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">
+                            In Progress
+                        </span>
+                        {% else %}
+                        <span class="px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">
+                            Completed
+                        </span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Crew Members -->
+<div class="bg-white rounded-lg shadow-md overflow-hidden mb-6">
+    <div class="bg-blue-50 px-6 py-4 border-b border-gray-200">
+        <h2 class="text-lg font-semibold text-gray-800">Crew Members</h2>
+    </div>
+    <div class="p-6">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {% for crew in flight.crew.all %}
+            <div class="bg-gray-50 rounded-lg p-4 border border-gray-200">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <div class="bg-blue-100 text-blue-800 rounded-full h-12 w-12 flex items-center justify-center">
+                            {{ crew.name|slice:":1" }}
+                        </div>
+                    </div>
+                    <div class="ml-4">
+                        <h4 class="text-sm font-medium text-gray-900">{{ crew.name }}</h4>
+                        <p class="text-sm text-gray-500">{{ crew.get_role_display }}</p>
+                        <p class="text-xs text-gray-500">{{ crew.experience }} years experience</p>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="col-span-3">
+                <p class="text-gray-500 text-center">No crew members assigned to this flight.</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<!-- Passenger List -->
+<div class="bg-white rounded-lg shadow-md overflow-hidden mb-6">
+    <div class="bg-blue-50 px-6 py-4 border-b border-gray-200 flex justify-between items-center">
+        <h2 class="text-lg font-semibold text-gray-800">Passengers</h2>
+        <a href="{% url 'booking-create' %}?flight={{ flight.pk }}" class="bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium py-2 px-4 rounded transition-colors">
+            Add Passenger
+        </a>
+    </div>
+    <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gray-50">
+                <tr>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Seat</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Booking Status</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Booking Date</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Boarding Pass</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">
+                {% for booking in flight.bookings.all %}
+                <tr class="hover:bg-gray-50 transition-colors">
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="flex items-center">
+                            <div>
+                                <div class="text-sm font-medium text-gray-900">{{ booking.passenger.name }}</div>
+                                <div class="text-sm text-gray-500">{{ booking.passenger.email }}</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="text-sm text-gray-900">{{ booking.seat_number }}</div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        {% if booking.status == 'CONFIRMED' %}
+                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                            Confirmed
+                        </span>
+                        {% elif booking.status == 'PENDING' %}
+                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">
+                            Pending
+                        </span>
+                        {% else %}
+                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
+                            Cancelled
+                        </span>
+                        {% endif %}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {{ booking.booking_date|date:"d M Y, H:i" }}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm">
+                        {% if booking.boarding_pass %}
+                        <div class="text-green-600">Issued</div>
+                        <div class="text-xs text-gray-500">Gate: {{ booking.boarding_pass.gate_number }}</div>
+                        {% else %}
+                        <div class="text-gray-500">Not Issued</div>
+                        {% endif %}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        <a href="{% url 'booking-detail' booking.pk %}" class="text-blue-600 hover:text-blue-900 mr-3">View</a>
+                        {% if not booking.boarding_pass %}
+                        <a href="{% url 'boarding-pass-create' %}?booking={{ booking.pk }}" class="text-green-600 hover:text-green-900">Issue Boarding Pass</a>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" class="px-6 py-4 text-center text-gray-500">No passengers booked for this flight.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

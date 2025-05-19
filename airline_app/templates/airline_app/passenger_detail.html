@@ -1,0 +1,174 @@
+<!-- templates/airline_app/passenger_detail.html -->
+{% extends 'airline_app/base.html' %}
+
+{% block header %}Passenger Details{% endblock %}
+
+{% block content %}
+<!-- Passenger Info Card -->
+<div class="bg-white rounded-lg shadow-md overflow-hidden mb-6">
+    <div class="bg-blue-50 px-6 py-4 border-b border-gray-200 flex justify-between items-center">
+        <h2 class="text-xl font-semibold text-gray-800">{{ passenger.name }}</h2>
+        <div class="flex space-x-2">
+            <a href="{% url 'booking-create' %}?passenger={{ passenger.pk }}" class="bg-green-600 hover:bg-green-700 text-white text-sm font-medium py-2 px-4 rounded transition-colors">
+                Create Booking
+            </a>
+        </div>
+    </div>
+    <div class="p-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+                <h3 class="text-lg font-medium text-gray-900 mb-4">Personal Information</h3>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <p class="text-sm text-gray-500">Full Name</p>
+                        <p class="text-base font-medium">{{ passenger.name }}</p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-500">Date of Birth</p>
+                        <p class="text-base font-medium">{{ passenger.date_of_birth|date:"d M Y" }}</p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-500">Gender</p>
+                        <p class="text-base font-medium">{{ passenger.get_gender_display }}</p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-500">Passport Number</p>
+                        <p class="text-base font-medium">{{ passenger.passport_number }}</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div>
+                <h3 class="text-lg font-medium text-gray-900 mb-4">Contact Information</h3>
+                <div class="grid grid-cols-1 gap-4">
+                    <div>
+                        <p class="text-sm text-gray-500">Email</p>
+                        <p class="text-base font-medium">{{ passenger.email }}</p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-500">Phone Number</p>
+                        <p class="text-base font-medium">{{ passenger.phone_number }}</p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-500">Address</p>
+                        <p class="text-base font-medium">{{ passenger.address }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Baggage -->
+<div class="bg-white rounded-lg shadow-md overflow-hidden mb-6">
+    <div class="bg-blue-50 px-6 py-4 border-b border-gray-200 flex justify-between items-center">
+        <h2 class="text-lg font-semibold text-gray-800">Baggage</h2>
+        <a href="#" class="bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium py-2 px-4 rounded transition-colors">
+            Add Baggage
+        </a>
+    </div>
+    <div class="p-6">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {% for bag in passenger.baggage.all %}
+            <div class="bg-gray-50 border border-gray-200 rounded-lg p-4">
+                <div class="flex justify-between items-center mb-2">
+                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                        {{ bag.get_type_display }}
+                    </span>
+                    <span class="text-gray-500 text-sm">ID: {{ bag.baggage_id }}</span>
+                </div>
+                <div class="flex items-center justify-center mt-2">
+                    <svg class="h-10 w-10 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                    </svg>
+                </div>
+                <div class="text-center mt-2">
+                    <p class="text-lg font-bold">{{ bag.weight }} kg</p>
+                </div>
+            </div>
+            {% empty %}
+            <div class="col-span-3 text-center py-4">
+                <p class="text-gray-500">No baggage records found.</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<!-- Booking History -->
+<div class="bg-white rounded-lg shadow-md overflow-hidden">
+    <div class="bg-blue-50 px-6 py-4 border-b border-gray-200">
+        <h2 class="text-lg font-semibold text-gray-800">Booking History</h2>
+    </div>
+    <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gray-50">
+                <tr>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Booking ID</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Flight</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Seat</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Payment</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">
+                {% for booking in passenger.bookings.all %}
+                <tr class="hover:bg-gray-50 transition-colors">
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="text-sm font-medium text-gray-900">{{ booking.booking_id }}</div>
+                        <div class="text-xs text-gray-500">{{ booking.booking_date|date:"d M Y" }}</div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="text-sm font-medium text-gray-900">{{ booking.flight.flight_number }}</div>
+                        <div class="text-xs text-gray-500">
+                            {{ booking.flight.source_airport.airport_name }} → {{ booking.flight.destination_airport.airport_name }}
+                        </div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="text-sm text-gray-900">{{ booking.flight.departure_time|date:"d M Y" }}</div>
+                        <div class="text-xs text-gray-500">{{ booking.flight.departure_time|date:"H:i" }}</div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {{ booking.seat_number }}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        {% if booking.status == 'CONFIRMED' %}
+                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                            Confirmed
+                        </span>
+                        {% elif booking.status == 'PENDING' %}
+                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">
+                            Pending
+                        </span>
+                        {% else %}
+                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
+                            Cancelled
+                        </span>
+                        {% endif %}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {% if booking.payment %}
+                        <span class="text-green-600">${{ booking.payment.amount }}</span>
+                        {% else %}
+                        <span class="text-red-600">Unpaid</span>
+                        {% endif %}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        <a href="{% url 'booking-detail' booking.pk %}" class="text-blue-600 hover:text-blue-900 mr-3">View</a>
+                        {% if not booking.payment %}
+                        <a href="{% url 'payment-create' %}?booking={{ booking.pk }}" class="text-green-600 hover:text-green-900">Add Payment</a>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="7" class="px-6 py-4 text-center text-gray-500">No bookings found for this passenger.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

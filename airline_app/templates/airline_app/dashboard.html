@@ -1,0 +1,123 @@
+{% extends 'airline_app/base.html' %}
+
+{% block header %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+    <!-- Stats Cards -->
+    <div class="bg-white p-6 rounded-lg shadow-md border-l-4 border-blue-500 transform transition-transform hover:scale-105">
+        <div class="flex justify-between items-center">
+            <div>
+                <p class="text-sm text-gray-500 font-medium">Today's Flights</p>
+                <p class="text-2xl font-bold text-gray-700">{{ today_departures }}</p>
+            </div>
+            <div class="bg-blue-100 p-3 rounded-full">
+                <svg class="w-6 h-6 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                </svg>
+            </div>
+        </div>
+    </div>
+
+    <div class="bg-white p-6 rounded-lg shadow-md border-l-4 border-green-500 transform transition-transform hover:scale-105">
+        <div class="flex justify-between items-center">
+            <div>
+                <p class="text-sm text-gray-500 font-medium">Total Bookings</p>
+                <p class="text-2xl font-bold text-gray-700">{{ total_bookings }}</p>
+            </div>
+            <div class="bg-green-100 p-3 rounded-full">
+                <svg class="w-6 h-6 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+            </div>
+        </div>
+    </div>
+
+    <div class="bg-white p-6 rounded-lg shadow-md border-l-4 border-yellow-500 transform transition-transform hover:scale-105">
+        <div class="flex justify-between items-center">
+            <div>
+                <p class="text-sm text-gray-500 font-medium">Pending Bookings</p>
+                <p class="text-2xl font-bold text-gray-700">{{ pending_bookings }}</p>
+            </div>
+            <div class="bg-yellow-100 p-3 rounded-full">
+                <svg class="w-6 h-6 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+            </div>
+        </div>
+    </div>
+
+    <div class="bg-white p-6 rounded-lg shadow-md border-l-4 border-purple-500 transform transition-transform hover:scale-105">
+        <div class="flex justify-between items-center">
+            <div>
+                <p class="text-sm text-gray-500 font-medium">Quick Actions</p>
+                <div class="mt-2">
+                    <a href="{% url 'booking-create' %}" class="text-xs bg-purple-100 text-purple-800 px-2 py-1 rounded">+ New Booking</a>
+                </div>
+            </div>
+            <div class="bg-purple-100 p-3 rounded-full">
+                <svg class="w-6 h-6 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                </svg>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Today's Flights -->
+<div class="bg-white rounded-lg shadow-md overflow-hidden mb-8">
+    <div class="p-4 bg-blue-50 border-b border-gray-200">
+        <h2 class="text-lg font-semibold text-gray-800">Today's Flights</h2>
+    </div>
+    <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gray-50">
+                <tr>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Flight Number</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">From</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">To</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Departure</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Arrival</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aircraft</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">
+                {% for flight in flights %}
+                <tr class="hover:bg-gray-50 transition-colors">
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="text-sm font-medium text-gray-900">{{ flight.flight_number }}</div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="text-sm text-gray-900">{{ flight.source_airport.airport_name }}</div>
+                        <div class="text-xs text-gray-500">{{ flight.source_airport.location }}</div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="text-sm text-gray-900">{{ flight.destination_airport.airport_name }}</div>
+                        <div class="text-xs text-gray-500">{{ flight.destination_airport.location }}</div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="text-sm text-gray-900">{{ flight.departure_time|date:"H:i" }}</div>
+                        <div class="text-xs text-gray-500">{{ flight.departure_time|date:"d M Y" }}</div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="text-sm text-gray-900">{{ flight.arrival_time|date:"H:i" }}</div>
+                        <div class="text-xs text-gray-500">{{ flight.arrival_time|date:"d M Y" }}</div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="text-sm text-gray-900">{{ flight.aircraft.model }}</div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        <a href="{% url 'flight-detail' flight.pk %}" class="text-blue-600 hover:text-blue-900 mr-3">View</a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="7" class="px-6 py-4 text-center text-gray-500">No flights scheduled for today</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

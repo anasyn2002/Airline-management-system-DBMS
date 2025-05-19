@@ -1,0 +1,109 @@
+<!-- templates/airline_app/booking_form.html -->
+{% extends 'airline_app/base.html' %}
+
+{% block header %}{% if form.instance.pk %}Edit Booking{% else %}Create New Booking{% endif %}{% endblock %}
+
+{% block content %}
+<div class="bg-white rounded-lg shadow-md overflow-hidden">
+    <div class="bg-blue-50 px-6 py-4 border-b border-gray-200">
+        <h2 class="text-xl font-semibold text-gray-800">{% if form.instance.pk %}Edit Booking Details{% else %}Create New Booking{% endif %}</h2>
+    </div>
+    <div class="p-6">
+        <form method="post" class="space-y-6">
+            {% csrf_token %}
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Passenger -->
+                <div>
+                    <label for="{{ form.passenger.id_for_label }}" class="block text-sm font-medium text-gray-700">Passenger</label>
+                    <div class="mt-1">
+                        <select name="{{ form.passenger.name }}" id="{{ form.passenger.id_for_label }}" 
+                                class="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md" required>
+                            <option value="">Select Passenger</option>
+                            {% for choice in form.passenger.field.queryset %}
+                            <option value="{{ choice.pk }}" {% if form.passenger.value|stringformat:"i" == choice.pk|stringformat:"i" %}selected{% endif %}>
+                                {{ choice.name }} ({{ choice.passport_number }})
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    {% if form.passenger.errors %}
+                    <p class="mt-1 text-sm text-red-600">{{ form.passenger.errors.0 }}</p>
+                    {% endif %}
+                    <div class="mt-2">
+                        <a href="{% url 'passenger-create' %}" class="text-sm text-blue-600 hover:text-blue-800">
+                            + Add new passenger
+                        </a>
+                    </div>
+                </div>
+                
+                <!-- Flight -->
+                <div>
+                    <label for="{{ form.flight.id_for_label }}" class="block text-sm font-medium text-gray-700">Flight</label>
+                    <div class="mt-1">
+                        <select name="{{ form.flight.name }}" id="{{ form.flight.id_for_label }}" 
+                                class="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md" required>
+                            <option value="">Select Flight</option>
+                            {% for choice in form.flight.field.queryset %}
+                            <option value="{{ choice.pk }}" {% if form.flight.value|stringformat:"i" == choice.pk|stringformat:"i" %}selected{% endif %}>
+                                {{ choice.flight_number }} - {{ choice.source_airport.airport_name }} to {{ choice.destination_airport.airport_name }} 
+                                ({{ choice.departure_time|date:"d M Y, H:i" }})
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    {% if form.flight.errors %}
+                    <p class="mt-1 text-sm text-red-600">{{ form.flight.errors.0 }}</p>
+                    {% endif %}
+                </div>
+                
+                <!-- Seat Number -->
+                <div>
+                    <label for="{{ form.seat_number.id_for_label }}" class="block text-sm font-medium text-gray-700">Seat Number</label>
+                    <div class="mt-1">
+                        <input type="text" name="{{ form.seat_number.name }}" id="{{ form.seat_number.id_for_label }}" value="{{ form.seat_number.value|default:'' }}" 
+                               class="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md"
+                               placeholder="e.g. 12A" required>
+                    </div>
+                    {% if form.seat_number.errors %}
+                    <p class="mt-1 text-sm text-red-600">{{ form.seat_number.errors.0 }}</p>
+                    {% endif %}
+                </div>
+                
+                <!-- Status -->
+                <div>
+                    <label for="{{ form.status.id_for_label }}" class="block text-sm font-medium text-gray-700">Status</label>
+                    <div class="mt-1">
+                        <select name="{{ form.status.name }}" id="{{ form.status.id_for_label }}" 
+                                class="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md" required>
+                            {% for choice in form.status.field.choices %}
+                            <option value="{{ choice.0 }}" {% if form.status.value == choice.0 %}selected{% endif %}>
+                                {{ choice.1 }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    {% if form.status.errors %}
+                    <p class="mt-1 text-sm text-red-600">{{ form.status.errors.0 }}</p>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Additional information -->
+            <div class="bg-yellow-50 p-4 rounded-md border border-yellow-200 text-sm text-yellow-800">
+                <p><strong>Note:</strong> After creating a booking, you can add payment details and issue a boarding pass from the booking details page.</p>
+            </div>
+            
+            <!-- Form actions -->
+            <div class="flex justify-end pt-5 border-t border-gray-200 mt-6">
+                <a href="{% url 'booking-list' %}" class="bg-white py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 mr-2">
+                    Cancel
+                </a>
+                <button type="submit" class="ml-3 inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                    Save
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,92 @@
+<!-- templates/airline_app/schedule_form.html -->
+{% extends 'airline_app/base.html' %}
+
+{% block header %}{% if form.instance.pk %}Edit Schedule{% else %}Create New Schedule{% endif %}{% endblock %}
+
+{% block content %}
+<div class="bg-white rounded-lg shadow-md overflow-hidden">
+    <div class="bg-blue-50 px-6 py-4 border-b border-gray-200">
+        <h2 class="text-xl font-semibold text-gray-800">{% if form.instance.pk %}Edit Schedule{% else %}Create New Schedule{% endif %}</h2>
+    </div>
+    <div class="p-6">
+        <form method="post" class="space-y-6">
+            {% csrf_token %}
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Flight -->
+                <div>
+                    <label for="{{ form.flight.id_for_label }}" class="block text-sm font-medium text-gray-700">Flight</label>
+                    <div class="mt-1">
+                        <select name="{{ form.flight.name }}" id="{{ form.flight.id_for_label }}" 
+                                class="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md" required>
+                            <option value="">Select Flight</option>
+                            {% for choice in form.flight.field.queryset %}
+                            <option value="{{ choice.pk }}" {% if form.flight.value|stringformat:"i" == choice.pk|stringformat:"i" %}selected{% endif %}>
+                                {{ choice.flight_number }} - {{ choice.source_airport.airport_name }} to {{ choice.destination_airport.airport_name }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    {% if form.flight.errors %}
+                    <p class="mt-1 text-sm text-red-600">{{ form.flight.errors.0 }}</p>
+                    {% endif %}
+                </div>
+                
+                <!-- Date -->
+                <div>
+                    <label for="{{ form.date.id_for_label }}" class="block text-sm font-medium text-gray-700">Date</label>
+                    <div class="mt-1">
+                        <input type="date" name="{{ form.date.name }}" id="{{ form.date.id_for_label }}" 
+                               value="{{ form.date.value|date:'Y-m-d' }}" 
+                               class="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md" required>
+                    </div>
+                    {% if form.date.errors %}
+                    <p class="mt-1 text-sm text-red-600">{{ form.date.errors.0 }}</p>
+                    {% endif %}
+                </div>
+                
+                <!-- Time -->
+                <div>
+                    <label for="{{ form.time.id_for_label }}" class="block text-sm font-medium text-gray-700">Time</label>
+                    <div class="mt-1">
+                        <input type="time" name="{{ form.time.name }}" id="{{ form.time.id_for_label }}" 
+                               value="{{ form.time.value|time:'H:i' }}" 
+                               class="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md" required>
+                    </div>
+                    {% if form.time.errors %}
+                    <p class="mt-1 text-sm text-red-600">{{ form.time.errors.0 }}</p>
+                    {% endif %}
+                </div>
+                
+                <!-- Staff -->
+                <div>
+                    <label for="{{ form.staff.id_for_label }}" class="block text-sm font-medium text-gray-700">Staff Assignment</label>
+                    <div class="mt-1">
+                        <input type="text" name="{{ form.staff.name }}" id="{{ form.staff.id_for_label }}" value="{{ form.staff.value|default:'' }}" 
+                               class="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md"
+                               placeholder="Staff name or team identifier">
+                    </div>
+                    {% if form.staff.errors %}
+                    <p class="mt-1 text-sm text-red-600">{{ form.staff.errors.0 }}</p>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Additional Information -->
+            <div class="bg-yellow-50 p-4 rounded-md border border-yellow-200 text-sm text-yellow-800">
+                <p><strong>Note:</strong> Creating a schedule assigns a flight to a specific date and time. Make sure the assigned flight is available at this time.</p>
+            </div>
+            
+            <!-- Form actions -->
+            <div class="flex justify-end pt-5 border-t border-gray-200 mt-6">
+                <a href="{% url 'schedule-list' %}" class="bg-white py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 mr-2">
+                    Cancel
+                </a>
+                <button type="submit" class="ml-3 inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                    Save
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

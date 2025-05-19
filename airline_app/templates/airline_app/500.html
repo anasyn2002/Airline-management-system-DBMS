@@ -1,0 +1,19 @@
+<!-- templates/airline_app/500.html -->
+{% extends 'airline_app/base.html' %}
+
+{% block header %}Server Error{% endblock %}
+
+{% block content %}
+<div class="flex flex-col items-center justify-center py-16">
+    <div class="text-red-500 text-6xl mb-4">
+        <svg class="h-24 w-24" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+        </svg>
+    </div>
+    <h1 class="text-4xl font-bold text-gray-800 mb-2">500 - Server Error</h1>
+    <p class="text-gray-600 mb-8">Something went wrong on our end. Please try again later.</p>
+    <a href="{% url 'dashboard' %}" class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition-colors">
+        Return to Dashboard
+    </a>
+</div>
+{% endblock %}

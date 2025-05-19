@@ -1,0 +1,117 @@
+<!-- templates/airline_app/passenger_list.html -->
+{% extends 'airline_app/base.html' %}
+
+{% block header %}Passengers{% endblock %}
+
+{% block content %}
+<div class="mb-6 flex justify-between items-center">
+    <h2 class="text-2xl font-bold text-gray-800">Passenger Management</h2>
+    <a href="{% url 'passenger-create' %}" class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg flex items-center transition-colors">
+        <svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+        </svg>
+        Add Passenger
+    </a>
+</div>
+
+<!-- Search -->
+<div class="bg-white rounded-lg shadow-md p-4 mb-6">
+    <form method="get" class="flex flex-col md:flex-row space-y-4 md:space-y-0 md:space-x-4">
+        <div class="flex-1">
+            <label class="block text-sm font-medium text-gray-700 mb-1">Search</label>
+            <input type="text" name="search" value="{{ request.GET.search }}" placeholder="Name, Email, Passport Number..." 
+                   class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50">
+        </div>
+        <div class="md:flex-none md:self-end">
+            <button type="submit" class="w-full md:w-auto bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition-colors">
+                Search
+            </button>
+        </div>
+    </form>
+</div>
+
+<!-- Passenger List -->
+<div class="bg-white rounded-lg shadow-md overflow-hidden">
+    <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gray-50">
+                <tr>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Passport</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Contact</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Gender</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date of Birth</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Bookings</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">
+                {% for passenger in passengers %}
+                <tr class="hover:bg-gray-50 transition-colors">
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="text-sm font-medium text-gray-900">{{ passenger.name }}</div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="text-sm text-gray-900">{{ passenger.passport_number }}</div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="text-sm text-gray-900">{{ passenger.email }}</div>
+                        <div class="text-sm text-gray-500">{{ passenger.phone_number }}</div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="text-sm text-gray-900">{{ passenger.get_gender_display }}</div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="text-sm text-gray-900">{{ passenger.date_of_birth|date:"d M Y" }}</div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {{ passenger.bookings.count }}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        <a href="{% url 'passenger-detail' passenger.pk %}" class="text-blue-600 hover:text-blue-900 mr-3">View</a>
+                        <a href="{% url 'booking-create' %}?passenger={{ passenger.pk }}" class="text-green-600 hover:text-green-900">Book</a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="7" class="px-6 py-4 text-center text-gray-500">No passengers found</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Pagination -->
+{% if is_paginated %}
+<!-- For pagination sections in all list templates: -->
+<div class="flex justify-center mt-6">
+    <div class="flex space-x-1">
+        {% if page_obj.has_previous %}
+        <a href="?page={{ page_obj.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" 
+           class="px-4 py-2 text-gray-700 bg-gray-200 rounded-md hover:bg-blue-500 hover:text-white">
+            Previous
+        </a>
+        {% endif %}
+        
+        {% for num in page_obj.paginator.page_range %}
+            {% if page_obj.number == num %}
+            <span class="px-4 py-2 text-white bg-blue-500 rounded-md">{{ num }}</span>
+            {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+            <a href="?page={{ num }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" 
+               class="px-4 py-2 text-gray-700 bg-gray-200 rounded-md hover:bg-blue-500 hover:text-white">
+                {{ num }}
+            </a>
+            {% endif %}
+        {% endfor %}
+        
+        {% if page_obj.has_next %}
+        <a href="?page={{ page_obj.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" 
+           class="px-4 py-2 text-gray-700 bg-gray-200 rounded-md hover:bg-blue-500 hover:text-white">
+            Next
+        </a>
+        {% endif %}
+    </div>
+</div>
+{% endif %}
+{% endblock %}

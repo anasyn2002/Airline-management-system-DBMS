@@ -1,0 +1,150 @@
+<!-- templates/airline_app/flight_form.html -->
+{% extends 'airline_app/base.html' %}
+
+{% block header %}{% if form.instance.pk %}Edit Flight{% else %}Add New Flight{% endif %}{% endblock %}
+
+{% block content %}
+<div class="bg-white rounded-lg shadow-md overflow-hidden">
+    <div class="bg-blue-50 px-6 py-4 border-b border-gray-200">
+        <h2 class="text-xl font-semibold text-gray-800">{% if form.instance.pk %}Edit Flight Details{% else %}Create New Flight{% endif %}</h2>
+    </div>
+    <div class="p-6">
+        <form method="post" class="space-y-6">
+            {% csrf_token %}
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Flight Number -->
+                <div>
+                    <label for="{{ form.flight_number.id_for_label }}" class="block text-sm font-medium text-gray-700">Flight Number</label>
+                    <div class="mt-1">
+                        <input type="text" name="{{ form.flight_number.name }}" id="{{ form.flight_number.id_for_label }}" value="{{ form.flight_number.value|default:'' }}" 
+                               class="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md"
+                               placeholder="e.g. DL123" required>
+                    </div>
+                    {% if form.flight_number.errors %}
+                    <p class="mt-1 text-sm text-red-600">{{ form.flight_number.errors.0 }}</p>
+                    {% endif %}
+                </div>
+                
+                <!-- Aircraft -->
+                <div>
+                    <label for="{{ form.aircraft.id_for_label }}" class="block text-sm font-medium text-gray-700">Aircraft</label>
+                    <div class="mt-1">
+                        <select name="{{ form.aircraft.name }}" id="{{ form.aircraft.id_for_label }}" 
+                                class="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md" required>
+                            <option value="">Select Aircraft</option>
+                            {% for choice in form.aircraft.field.queryset %}
+                            <option value="{{ choice.pk }}" {% if form.aircraft.value|stringformat:"i" == choice.pk|stringformat:"i" %}selected{% endif %}>
+                                {{ choice.model }} ({{ choice.airline }})
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    {% if form.aircraft.errors %}
+                    <p class="mt-1 text-sm text-red-600">{{ form.aircraft.errors.0 }}</p>
+                    {% endif %}
+                </div>
+                
+                <!-- Source Airport -->
+                <div>
+                    <label for="{{ form.source_airport.id_for_label }}" class="block text-sm font-medium text-gray-700">Departure Airport</label>
+                    <div class="mt-1">
+                        <select name="{{ form.source_airport.name }}" id="{{ form.source_airport.id_for_label }}" 
+                                class="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md" required>
+                            <option value="">Select Departure Airport</option>
+                            {% for choice in form.source_airport.field.queryset %}
+                            <option value="{{ choice.pk }}" {% if form.source_airport.value|stringformat:"i" == choice.pk|stringformat:"i" %}selected{% endif %}>
+                                {{ choice.airport_name }} ({{ choice.location }}, {{ choice.country }})
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    {% if form.source_airport.errors %}
+                    <p class="mt-1 text-sm text-red-600">{{ form.source_airport.errors.0 }}</p>
+                    {% endif %}
+                </div>
+                
+                <!-- Destination Airport -->
+                <div>
+                    <label for="{{ form.destination_airport.id_for_label }}" class="block text-sm font-medium text-gray-700">Arrival Airport</label>
+                    <div class="mt-1">
+                        <select name="{{ form.destination_airport.name }}" id="{{ form.destination_airport.id_for_label }}" 
+                                class="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md" required>
+                            <option value="">Select Arrival Airport</option>
+                            {% for choice in form.destination_airport.field.queryset %}
+                            <option value="{{ choice.pk }}" {% if form.destination_airport.value|stringformat:"i" == choice.pk|stringformat:"i" %}selected{% endif %}>
+                                {{ choice.airport_name }} ({{ choice.location }}, {{ choice.country }})
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    {% if form.destination_airport.errors %}
+                    <p class="mt-1 text-sm text-red-600">{{ form.destination_airport.errors.0 }}</p>
+                    {% endif %}
+                </div>
+                
+                <!-- Departure Time -->
+                <div>
+                    <label for="{{ form.departure_time.id_for_label }}" class="block text-sm font-medium text-gray-700">Departure Time</label>
+                    <div class="mt-1">
+                        <input type="datetime-local" name="{{ form.departure_time.name }}" id="{{ form.departure_time.id_for_label }}" 
+                               value="{{ form.departure_time.value|date:'Y-m-d\TH:i' }}" 
+                               class="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md" required>
+                    </div>
+                    {% if form.departure_time.errors %}
+                    <p class="mt-1 text-sm text-red-600">{{ form.departure_time.errors.0 }}</p>
+                    {% endif %}
+                </div>
+                
+                <!-- Arrival Time -->
+                <div>
+                    <label for="{{ form.arrival_time.id_for_label }}" class="block text-sm font-medium text-gray-700">Arrival Time</label>
+                    <div class="mt-1">
+                        <input type="datetime-local" name="{{ form.arrival_time.name }}" id="{{ form.arrival_time.id_for_label }}" 
+                               value="{{ form.arrival_time.value|date:'Y-m-d\TH:i' }}" 
+                               class="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md" required>
+                    </div>
+                    {% if form.arrival_time.errors %}
+                    <p class="mt-1 text-sm text-red-600">{{ form.arrival_time.errors.0 }}</p>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Crew Members -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Assign Crew Members</label>
+                <div class="bg-gray-50 rounded-md p-4 max-h-60 overflow-y-auto">
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        {% for choice in form.crew.field.queryset %}
+                        <div class="flex items-start">
+                            <div class="flex items-center h-5">
+                                <input type="checkbox" name="{{ form.crew.name }}" value="{{ choice.pk }}" 
+                                       {% if choice.pk|stringformat:"i" in form.crew.value %}checked{% endif %}
+                                       class="focus:ring-blue-500 h-4 w-4 text-blue-600 border-gray-300 rounded">
+                            </div>
+                            <div class="ml-3 text-sm">
+                                <label class="font-medium text-gray-700">{{ choice.name }}</label>
+                                <p class="text-gray-500">{{ choice.get_role_display }} ({{ choice.airline }})</p>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% if form.crew.errors %}
+                <p class="mt-1 text-sm text-red-600">{{ form.crew.errors.0 }}</p>
+                {% endif %}
+            </div>
+            
+            <!-- Form actions -->
+            <div class="flex justify-end pt-5 border-t border-gray-200 mt-6">
+                <a href="{% url 'flight-list' %}" class="bg-white py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 mr-2">
+                    Cancel
+                </a>
+                <button type="submit" class="ml-3 inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                    Save
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

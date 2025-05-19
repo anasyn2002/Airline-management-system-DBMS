@@ -1,0 +1,197 @@
+<!-- templates/airline_app/schedule_list.html -->
+{% extends 'airline_app/base.html' %}
+
+{% block header %}Flight Schedules{% endblock %}
+
+{% block content %}
+<div class="mb-6 flex justify-between items-center">
+    <h2 class="text-2xl font-bold text-gray-800">Schedule Management</h2>
+    <a href="{% url 'schedule-create' %}" class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg flex items-center transition-colors">
+        <svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+        </svg>
+        Add Schedule
+    </a>
+</div>
+
+<!-- Filters -->
+<div class="bg-white rounded-lg shadow-md p-4 mb-6">
+    <form method="get" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Flight Number</label>
+            <input type="text" name="flight" value="{{ request.GET.flight }}" placeholder="e.g. DL123" 
+                   class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50">
+        </div>
+        <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Date</label>
+            <input type="date" name="date" value="{{ request.GET.date }}" 
+                   class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50">
+        </div>
+        <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Staff</label>
+            <input type="text" name="staff" value="{{ request.GET.staff }}" placeholder="Staff name or team" 
+                   class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50">
+        </div>
+        <div class="flex items-end">
+            <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition-colors">
+                Filter
+            </button>
+        </div>
+    </form>
+</div>
+
+<!-- Schedule Calendar View -->
+<div class="mb-6">
+    <div class="bg-white rounded-lg shadow-md overflow-hidden">
+        <div class="bg-blue-50 px-6 py-4 border-b border-gray-200">
+            <h2 class="text-lg font-semibold text-gray-800">{{ current_month_name }} {{ current_year }}</h2>
+        </div>
+        <div class="p-4">
+            <div class="grid grid-cols-7 gap-px bg-gray-200">
+                <!-- Day headers -->
+                <div class="bg-gray-100 text-center py-2 font-medium text-gray-500">Sun</div>
+                <div class="bg-gray-100 text-center py-2 font-medium text-gray-500">Mon</div>
+                <div class="bg-gray-100 text-center py-2 font-medium text-gray-500">Tue</div>
+                <div class="bg-gray-100 text-center py-2 font-medium text-gray-500">Wed</div>
+                <div class="bg-gray-100 text-center py-2 font-medium text-gray-500">Thu</div>
+                <div class="bg-gray-100 text-center py-2 font-medium text-gray-500">Fri</div>
+                <div class="bg-gray-100 text-center py-2 font-medium text-gray-500">Sat</div>
+                
+                <!-- Calendar cells -->
+                {% for week in calendar_weeks %}
+                    {% for day, day_schedules in week.items %}
+                        {% if day == 0 %}
+                        <div class="bg-gray-50 h-24 p-1"></div>
+                        {% else %}
+                        <div class="bg-white h-24 p-1 relative overflow-hidden border border-gray-100">
+                            <div class="flex justify-between items-start">
+                                <span class="text-sm font-medium {% if day == today_day and current_month == today_month and current_year == today_year %}bg-blue-100 text-blue-800 rounded-full w-6 h-6 flex items-center justify-center{% endif %}">
+                                    {{ day }}
+                                </span>
+                                
+                                {% if day_schedules %}
+                                <span class="text-xs bg-blue-100 text-blue-800 rounded-full px-2 py-0.5">
+                                    {{ day_schedules|length }}
+                                </span>
+                                {% endif %}
+                            </div>
+                            
+                            <!-- Scheduled flights for this day -->
+                            <div class="mt-1 overflow-y-auto max-h-16">
+                                {% for schedule in day_schedules %}
+                                <div class="text-xs p-0.5 mb-0.5 rounded bg-blue-50 border-l-2 border-blue-500 truncate">
+                                    {{ schedule.time|date:"H:i" }} - {{ schedule.flight.flight_number }}
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        {% endif %}
+                    {% endfor %}
+                {% endfor %}
+            </div>
+            
+            <!-- Month navigation -->
+            <div class="flex justify-between items-center mt-4">
+                <a href="?month={{ prev_month }}&year={{ prev_year }}{% for key, value in request.GET.items %}{% if key != 'month' and key != 'year' and key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" 
+                class="text-blue-600 hover:text-blue-800">
+                    &larr; {{ prev_month_name }}
+                </a>
+                <a href="?month={{ next_month }}&year={{ next_year }}{% for key, value in request.GET.items %}{% if key != 'month' and key != 'year' and key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" 
+                class="text-blue-600 hover:text-blue-800">
+                    {{ next_month_name }} &rarr;
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Schedule List -->
+<div class="bg-white rounded-lg shadow-md overflow-hidden">
+    <div class="bg-blue-50 px-6 py-4 border-b border-gray-200">
+        <h2 class="text-lg font-semibold text-gray-800">Flight Schedules</h2>
+    </div>
+    <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gray-50">
+                <tr>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Schedule ID</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Flight</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Time</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Route</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Staff</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">
+                {% for schedule in schedules %}
+                <tr class="hover:bg-gray-50 transition-colors">
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="text-sm font-medium text-gray-900">#{{ schedule.schedule_id }}</div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="text-sm font-medium text-gray-900">{{ schedule.flight.flight_number }}</div>
+                        <div class="text-xs text-gray-500">{{ schedule.flight.aircraft.model }}</div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="text-sm text-gray-900">{{ schedule.date|date:"d M Y" }}</div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {{ schedule.time|date:"H:i" }}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="text-sm text-gray-900">
+                            {{ schedule.flight.source_airport.airport_name }} → {{ schedule.flight.destination_airport.airport_name }}
+                        </div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {{ schedule.staff }}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        <a href="{% url 'flight-detail' schedule.flight.pk %}" class="text-blue-600 hover:text-blue-900 mr-3">View Flight</a>
+                        <a href="{% url 'schedule-edit' schedule.pk %}" class="text-green-600 hover:text-green-900">Edit</a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="7" class="px-6 py-4 text-center text-gray-500">No schedules found matching your criteria.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Pagination -->
+{% if is_paginated %}
+<!-- For pagination sections in all list templates: -->
+<div class="flex justify-center mt-6">
+    <div class="flex space-x-1">
+        {% if page_obj.has_previous %}
+        <a href="?page={{ page_obj.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" 
+           class="px-4 py-2 text-gray-700 bg-gray-200 rounded-md hover:bg-blue-500 hover:text-white">
+            Previous
+        </a>
+        {% endif %}
+        
+        {% for num in page_obj.paginator.page_range %}
+            {% if page_obj.number == num %}
+            <span class="px-4 py-2 text-white bg-blue-500 rounded-md">{{ num }}</span>
+            {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+            <a href="?page={{ num }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" 
+               class="px-4 py-2 text-gray-700 bg-gray-200 rounded-md hover:bg-blue-500 hover:text-white">
+                {{ num }}
+            </a>
+            {% endif %}
+        {% endfor %}
+        
+        {% if page_obj.has_next %}
+        <a href="?page={{ page_obj.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" 
+           class="px-4 py-2 text-gray-700 bg-gray-200 rounded-md hover:bg-blue-500 hover:text-white">
+            Next
+        </a>
+        {% endif %}
+    </div>
+</div>
+{% endif %}
+{% endblock %}

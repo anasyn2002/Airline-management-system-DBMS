@@ -1,0 +1,19 @@
+<!-- templates/airline_app/403.html -->
+{% extends 'airline_app/base.html' %}
+
+{% block header %}Access Denied{% endblock %}
+
+{% block content %}
+<div class="flex flex-col items-center justify-center py-16">
+    <div class="text-red-500 text-6xl mb-4">
+        <svg class="h-24 w-24" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m0 0v2m0-2h2m-2 0H9m3-6V7a3 3 0 00-3-3H6m18 0h-3a3 3 0 00-3 3v4a3 3 0 003 3h3M6 7h3a3 3 0 013 3v4a3 3 0 01-3 3H6m0-10v10"></path>
+        </svg>
+    </div>
+    <h1 class="text-4xl font-bold text-gray-800 mb-2">403 - Access Denied</h1>
+    <p class="text-gray-600 mb-8">You don't have permission to access this page.</p>
+    <a href="{% url 'dashboard' %}" class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition-colors">
+        Return to Dashboard
+    </a>
+</div>
+{% endblock %}
