@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Boarding Pass #{{ booking.booking_id }}</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        h1 { font-size: 24px; }
+        p { font-size: 14px; }
+        .section { margin-bottom: 20px; }
+    </style>
+</head>
+<body>
+    <h1>{{ booking.flight.aircraft.airline }} — BOARDING PASS</h1>
+    <div class="section">
+        <strong>Passenger:</strong> {{ booking.passenger.name }}<br>
+        <strong>Booking Ref:</strong> #{{ booking.booking_id }}<br>
+        <strong>Flight:</strong> {{ booking.flight.flight_number }}<br>
+        <strong>Seat:</strong> {{ booking.boarding_pass.seat_number }}<br>
+        <strong>Gate:</strong> {{ booking.boarding_pass.gate_number }}
+    </div>
+    <div class="section">
+        <strong>Barcode:</strong> {{ booking.boarding_pass.barcode }}
+    </div>
+    <p>Present this boarding pass at the gate. Safe travels!</p>
+</body>
+</html>

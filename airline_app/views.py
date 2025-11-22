@@ -12,33 +12,43 @@ from datetime import datetime, date
 from django.contrib.auth import logout
 from django.contrib.auth.views import LoginView
 from django.contrib.auth.decorators import login_required
+import io
+from django.template.loader import render_to_string
+from django.http import HttpResponse
 
 # Dashboard View
+
+
 class DashboardView(LoginRequiredMixin, ListView):
     template_name = 'airline_app/dashboard.html'
     context_object_name = 'flights'
-    
+
     def get_queryset(self):
-        # SQL: SELECT * FROM airline_app_flight 
+        # SQL: SELECT * FROM airline_app_flight
         # WHERE DATE(departure_time) = CURRENT_DATE;
         return Flight.objects.filter(departure_time__date=timezone.now().date())
-    
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        # SQL: SELECT COUNT(*) FROM airline_app_booking 
+        # SQL: SELECT COUNT(*) FROM airline_app_booking
         # WHERE status = 'CONFIRMED';
-        context['total_bookings'] = Booking.objects.filter(status='CONFIRMED').count()
-        
-        # SQL: SELECT COUNT(*) FROM airline_app_flight 
+        context['total_bookings'] = Booking.objects.filter(
+            status='CONFIRMED').count()
+
+        # SQL: SELECT COUNT(*) FROM airline_app_flight
         # WHERE DATE(departure_time) = CURRENT_DATE;
-        context['today_departures'] = Flight.objects.filter(departure_time__date=timezone.now().date()).count()
-        
-        # SQL: SELECT COUNT(*) FROM airline_app_booking 
+        context['today_departures'] = Flight.objects.filter(
+            departure_time__date=timezone.now().date()).count()
+
+        # SQL: SELECT COUNT(*) FROM airline_app_booking
         # WHERE status = 'PENDING';
-        context['pending_bookings'] = Booking.objects.filter(status='PENDING').count()
+        context['pending_bookings'] = Booking.objects.filter(
+            status='PENDING').count()
         return context
 
 # Flight Views
+
+
 class FlightListView(LoginRequiredMixin, ListView):
     model = Flight
     template_name = 'airline_app/flight_list.html'
@@ -48,28 +58,28 @@ class FlightListView(LoginRequiredMixin, ListView):
     def get_queryset(self):
         # SQL: SELECT * FROM airline_app_flight;
         queryset = Flight.objects.all()
-        
+
         # Apply filters if provided
         flight_number = self.request.GET.get('flight_number', '')
         if flight_number:
-            # SQL: SELECT * FROM airline_app_flight 
+            # SQL: SELECT * FROM airline_app_flight
             # WHERE flight_number LIKE '%{flight_number}%';
             queryset = queryset.filter(flight_number__icontains=flight_number)
-        
+
         source = self.request.GET.get('source', '')
         if source:
-            # SQL: SELECT * FROM airline_app_flight 
+            # SQL: SELECT * FROM airline_app_flight
             # WHERE source_airport_id = {source};
             queryset = queryset.filter(source_airport_id=source)
-        
+
         destination = self.request.GET.get('destination', '')
         if destination:
-            # SQL: SELECT * FROM airline_app_flight 
+            # SQL: SELECT * FROM airline_app_flight
             # WHERE destination_airport_id = {destination};
             queryset = queryset.filter(destination_airport_id=destination)
-        
+
         return queryset
-    
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['now'] = timezone.now()
@@ -82,19 +92,21 @@ class FlightDetailView(LoginRequiredMixin, DetailView):
     model = Flight
     template_name = 'airline_app/flight_detail.html'
     context_object_name = 'flight'
-    
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        # SQL: SELECT * FROM airline_app_booking 
+        # SQL: SELECT * FROM airline_app_booking
         # WHERE flight_id = {self.object.id};
         context['bookings'] = self.object.bookings.all()
         return context
+
 
 class FlightCreateView(LoginRequiredMixin, CreateView):
     model = Flight
     template_name = 'airline_app/flight_form.html'
     form_class = FlightForm
     success_url = reverse_lazy('flight-list')
+
 
 class FlightUpdateView(LoginRequiredMixin, UpdateView):
     model = Flight
@@ -103,6 +115,8 @@ class FlightUpdateView(LoginRequiredMixin, UpdateView):
     success_url = reverse_lazy('flight-list')
 
 # Passenger Views
+
+
 class PassengerListView(LoginRequiredMixin, ListView):
     model = Passenger
     template_name = 'airline_app/passenger_list.html'
@@ -112,37 +126,39 @@ class PassengerListView(LoginRequiredMixin, ListView):
     def get_queryset(self):
         # SQL: SELECT * FROM airline_app_passenger;
         queryset = Passenger.objects.all()
-        
+
         # Apply search filter if provided
         search = self.request.GET.get('search', '')
         if search:
-            # SQL: SELECT * FROM airline_app_passenger 
-            # WHERE name LIKE '%{search}%' 
-            # OR email LIKE '%{search}%' 
+            # SQL: SELECT * FROM airline_app_passenger
+            # WHERE name LIKE '%{search}%'
+            # OR email LIKE '%{search}%'
             # OR passport_number LIKE '%{search}%';
             queryset = queryset.filter(
-                models.Q(name__icontains=search) | 
-                models.Q(email__icontains=search) | 
+                models.Q(name__icontains=search) |
+                models.Q(email__icontains=search) |
                 models.Q(passport_number__icontains=search)
             )
-        
+
         return queryset
+
 
 class PassengerDetailView(LoginRequiredMixin, DetailView):
     model = Passenger
     template_name = 'airline_app/passenger_detail.html'
     context_object_name = 'passenger'
-    
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        # SQL: SELECT * FROM airline_app_booking 
+        # SQL: SELECT * FROM airline_app_booking
         # WHERE passenger_id = {self.object.id};
         context['bookings'] = self.object.bookings.all()
-        
-        # SQL: SELECT * FROM airline_app_baggage 
+
+        # SQL: SELECT * FROM airline_app_baggage
         # WHERE passenger_id = {self.object.id};
         context['baggage'] = self.object.baggage.all()
         return context
+
 
 class PassengerCreateView(LoginRequiredMixin, CreateView):
     model = Passenger
@@ -151,6 +167,8 @@ class PassengerCreateView(LoginRequiredMixin, CreateView):
     success_url = reverse_lazy('passenger-list')
 
 # Booking Views
+
+
 class BookingListView(LoginRequiredMixin, ListView):
     model = Booking
     template_name = 'airline_app/booking_list.html'
@@ -160,52 +178,57 @@ class BookingListView(LoginRequiredMixin, ListView):
     def get_queryset(self):
         # SQL: SELECT * FROM airline_app_booking;
         queryset = Booking.objects.all()
-        
+
         # Apply filters if provided
         status = self.request.GET.get('status', '')
         if status:
-            # SQL: SELECT * FROM airline_app_booking 
+            # SQL: SELECT * FROM airline_app_booking
             # WHERE status = {status};
             queryset = queryset.filter(status=status)
-        
+
         flight = self.request.GET.get('flight', '')
         if flight:
             # SQL: SELECT * FROM airline_app_booking b
             # JOIN airline_app_flight f ON b.flight_id = f.id
             # WHERE f.flight_number LIKE '%{flight}%';
             queryset = queryset.filter(flight__flight_number__icontains=flight)
-        
+
         passenger = self.request.GET.get('passenger', '')
         if passenger:
             # SQL: SELECT * FROM airline_app_booking b
             # JOIN airline_app_passenger p ON b.passenger_id = p.id
             # WHERE p.name LIKE '%{passenger}%';
             queryset = queryset.filter(passenger__name__icontains=passenger)
-        
+
         return queryset
-    
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        
+
         # Add booking statistics
-        # SQL: SELECT COUNT(*) FROM airline_app_booking 
+        # SQL: SELECT COUNT(*) FROM airline_app_booking
         # WHERE status = 'CONFIRMED';
-        context['confirmed_count'] = Booking.objects.filter(status='CONFIRMED').count()
-        
-        # SQL: SELECT COUNT(*) FROM airline_app_booking 
+        context['confirmed_count'] = Booking.objects.filter(
+            status='CONFIRMED').count()
+
+        # SQL: SELECT COUNT(*) FROM airline_app_booking
         # WHERE status = 'PENDING';
-        context['pending_count'] = Booking.objects.filter(status='PENDING').count()
-        
-        # SQL: SELECT COUNT(*) FROM airline_app_booking 
+        context['pending_count'] = Booking.objects.filter(
+            status='PENDING').count()
+
+        # SQL: SELECT COUNT(*) FROM airline_app_booking
         # WHERE status = 'CANCELLED';
-        context['cancelled_count'] = Booking.objects.filter(status='CANCELLED').count()
-        
+        context['cancelled_count'] = Booking.objects.filter(
+            status='CANCELLED').count()
+
         return context
+
 
 class BookingDetailView(LoginRequiredMixin, DetailView):
     model = Booking
     template_name = 'airline_app/booking_detail.html'
     context_object_name = 'booking'
+
 
 class BookingCreateView(LoginRequiredMixin, CreateView):
     model = Booking
@@ -214,6 +237,8 @@ class BookingCreateView(LoginRequiredMixin, CreateView):
     success_url = reverse_lazy('booking-list')
 
 # Payment Views
+
+
 class PaymentListView(LoginRequiredMixin, ListView):
     model = Payment
     template_name = 'airline_app/payment_list.html'
@@ -223,45 +248,45 @@ class PaymentListView(LoginRequiredMixin, ListView):
     def get_queryset(self):
         # SQL: SELECT * FROM airline_app_payment;
         queryset = Payment.objects.all()
-        
+
         # Apply filters if provided
         method = self.request.GET.get('method', '')
         if method:
-            # SQL: SELECT * FROM airline_app_payment 
+            # SQL: SELECT * FROM airline_app_payment
             # WHERE payment_method = {method};
             queryset = queryset.filter(payment_method=method)
-        
+
         date_from = self.request.GET.get('date_from', '')
         if date_from:
             try:
                 date_from = datetime.strptime(date_from, '%Y-%m-%d').date()
-                # SQL: SELECT * FROM airline_app_payment 
+                # SQL: SELECT * FROM airline_app_payment
                 # WHERE DATE(payment_date) >= {date_from};
                 queryset = queryset.filter(payment_date__date__gte=date_from)
             except ValueError:
                 pass
-        
+
         date_to = self.request.GET.get('date_to', '')
         if date_to:
             try:
                 date_to = datetime.strptime(date_to, '%Y-%m-%d').date()
-                # SQL: SELECT * FROM airline_app_payment 
+                # SQL: SELECT * FROM airline_app_payment
                 # WHERE DATE(payment_date) <= {date_to};
                 queryset = queryset.filter(payment_date__date__lte=date_to)
             except ValueError:
                 pass
-        
+
         return queryset
-    
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        
+
         # Payment statistics
         payment_stats = get_payment_stats()
         context.update(payment_stats)
-        
+
         return context
-    
+
 
 class PaymentCreateView(LoginRequiredMixin, CreateView):
     model = Payment
@@ -269,7 +294,35 @@ class PaymentCreateView(LoginRequiredMixin, CreateView):
     form_class = PaymentForm
     success_url = reverse_lazy('payment-list')
 
+    def get_initial(self):
+        initial = super().get_initial()
+        booking_id = self.request.GET.get('booking')
+        if booking_id:
+            initial['booking'] = booking_id
+        return initial
+
+    def get_form(self, form_class=None):
+        form = super().get_form(form_class)
+        booking_id = self.request.GET.get('booking')
+        if booking_id:
+            form.fields['booking'].widget.attrs['readonly'] = True
+            form.fields['booking'].disabled = True
+        return form
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        booking_id = self.request.GET.get('booking')
+        if booking_id:
+            try:
+                context['booking'] = Booking.objects.get(pk=booking_id)
+            except Booking.DoesNotExist:
+                context['booking'] = None
+        return context
+
+
 # Boarding Pass Views
+
+
 class BoardingPassListView(LoginRequiredMixin, ListView):
     model = BoardingPass
     template_name = 'airline_app/boarding_pass_list.html'
@@ -279,7 +332,7 @@ class BoardingPassListView(LoginRequiredMixin, ListView):
     def get_queryset(self):
         # SQL: SELECT * FROM airline_app_boardingpass;
         queryset = BoardingPass.objects.all()
-        
+
         # Apply filters if provided
         flight = self.request.GET.get('flight', '')
         if flight:
@@ -287,24 +340,31 @@ class BoardingPassListView(LoginRequiredMixin, ListView):
             # JOIN airline_app_flight f ON bp.flight_id = f.id
             # WHERE f.flight_number LIKE '%{flight}%';
             queryset = queryset.filter(flight__flight_number__icontains=flight)
-        
+
         gate = self.request.GET.get('gate', '')
         if gate:
-            # SQL: SELECT * FROM airline_app_boardingpass 
+            # SQL: SELECT * FROM airline_app_boardingpass
             # WHERE gate_number LIKE '%{gate}%';
             queryset = queryset.filter(gate_number__icontains=gate)
-        
+
         date = self.request.GET.get('date', '')
         if date:
             try:
                 date = datetime.strptime(date, '%Y-%m-%d').date()
-                # SQL: SELECT * FROM airline_app_boardingpass 
+                # SQL: SELECT * FROM airline_app_boardingpass
                 # WHERE DATE(boarding_time) = {date};
                 queryset = queryset.filter(boarding_time__date=date)
             except ValueError:
                 pass
-        
+
         return queryset
+
+
+# class BoardingPassCreateView(LoginRequiredMixin, CreateView):
+#     model = BoardingPass
+#     template_name = 'airline_app/boarding_pass_form.html'
+#     form_class = BoardingPassForm
+#     success_url = reverse_lazy('boarding-pass-list')
 
 class BoardingPassCreateView(LoginRequiredMixin, CreateView):
     model = BoardingPass
@@ -312,7 +372,31 @@ class BoardingPassCreateView(LoginRequiredMixin, CreateView):
     form_class = BoardingPassForm
     success_url = reverse_lazy('boarding-pass-list')
 
+    def form_valid(self, form):
+        booking = form.cleaned_data['booking']
+        form.instance.flight = booking.flight
+        form.instance.passenger = booking.passenger
+        return super().form_valid(form)
+
+    def get_initial(self):
+        initial = super().get_initial()
+        booking_id = self.request.GET.get('booking')
+        if booking_id:
+            initial['booking'] = booking_id
+        return initial
+
+    def get_form(self, form_class=None):
+        form = super().get_form(form_class)
+        booking_id = self.request.GET.get('booking')
+        if booking_id:
+            form.fields['booking'].widget.attrs['readonly'] = True
+            form.fields['booking'].disabled = True
+        return form
+
+
 # Schedule Views
+
+
 class ScheduleListView(LoginRequiredMixin, ListView):
     model = Schedule
     template_name = 'airline_app/schedule_list.html'
@@ -322,7 +406,7 @@ class ScheduleListView(LoginRequiredMixin, ListView):
     def get_queryset(self):
         # SQL: SELECT * FROM airline_app_schedule;
         queryset = Schedule.objects.all()
-        
+
         # Apply filters if provided
         flight = self.request.GET.get('flight', '')
         if flight:
@@ -330,55 +414,56 @@ class ScheduleListView(LoginRequiredMixin, ListView):
             # JOIN airline_app_flight f ON s.flight_id = f.id
             # WHERE f.flight_number LIKE '%{flight}%';
             queryset = queryset.filter(flight__flight_number__icontains=flight)
-            
+
         staff = self.request.GET.get('staff', '')
         if staff:
-            # SQL: SELECT * FROM airline_app_schedule 
+            # SQL: SELECT * FROM airline_app_schedule
             # WHERE staff LIKE '%{staff}%';
             queryset = queryset.filter(staff__icontains=staff)
-            
+
         date_filter = self.request.GET.get('date', '')
         if date_filter:
             try:
                 date_obj = datetime.strptime(date_filter, '%Y-%m-%d').date()
-                # SQL: SELECT * FROM airline_app_schedule 
+                # SQL: SELECT * FROM airline_app_schedule
                 # WHERE date = {date_obj};
                 queryset = queryset.filter(date=date_obj)
             except ValueError:
                 pass
-        
+
         return queryset
-    
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        
+
         # Calendar view data
         today = date.today()
         year = int(self.request.GET.get('year', today.year))
         month = int(self.request.GET.get('month', today.month))
-        
+
         # Get schedules for the selected month (for calendar view)
-        # SQL: SELECT * FROM airline_app_schedule 
-        # WHERE EXTRACT(YEAR FROM date) = {year} 
+        # SQL: SELECT * FROM airline_app_schedule
+        # WHERE EXTRACT(YEAR FROM date) = {year}
         # AND EXTRACT(MONTH FROM date) = {month};
-        month_schedules = Schedule.objects.filter(date__year=year, date__month=month)
-        
+        month_schedules = Schedule.objects.filter(
+            date__year=year, date__month=month)
+
         # Add calendar data
         calendar_data = get_calendar_data(year, month, month_schedules)
         context.update(calendar_data)
-        
+
         return context
 
-    
     def get_calendar_data(self, year, month, schedules=None):
         today = date.today()
-        
+
         cal = calendar.monthcalendar(year, month)
-        # SQL: SELECT * FROM airline_app_schedule 
-        # WHERE EXTRACT(YEAR FROM date) = {year} 
+        # SQL: SELECT * FROM airline_app_schedule
+        # WHERE EXTRACT(YEAR FROM date) = {year}
         # AND EXTRACT(MONTH FROM date) = {month};
-        month_schedules = schedules if schedules is not None else Schedule.objects.filter(date__year=year, date__month=month)
-        
+        month_schedules = schedules if schedules is not None else Schedule.objects.filter(
+            date__year=year, date__month=month)
+
         # Group schedules by day
         scheduled_days = {}
         for schedule in month_schedules:
@@ -386,7 +471,7 @@ class ScheduleListView(LoginRequiredMixin, ListView):
             if day not in scheduled_days:
                 scheduled_days[day] = []
             scheduled_days[day].append(schedule)
-        
+
         # Prepare calendar data
         calendar_weeks = []
         for week in cal:
@@ -397,7 +482,7 @@ class ScheduleListView(LoginRequiredMixin, ListView):
                 else:
                     week_dict[day] = scheduled_days.get(day, [])
             calendar_weeks.append(week_dict)
-        
+
         # Calculate previous and next month
         if month == 1:
             prev_month = 12
@@ -405,14 +490,14 @@ class ScheduleListView(LoginRequiredMixin, ListView):
         else:
             prev_month = month - 1
             prev_year = year
-        
+
         if month == 12:
             next_month = 1
             next_year = year + 1
         else:
             next_month = month + 1
             next_year = year
-        
+
         return {
             'calendar_weeks': calendar_weeks,
             'current_month': month,
@@ -429,22 +514,24 @@ class ScheduleListView(LoginRequiredMixin, ListView):
             'today_year': today.year,
         }
 
+
 class ScheduleCreateView(LoginRequiredMixin, CreateView):
     model = Schedule
     template_name = 'airline_app/schedule_form.html'
     form_class = ScheduleForm
     success_url = reverse_lazy('schedule-list')
-    
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         return context
+
 
 class ScheduleUpdateView(LoginRequiredMixin, UpdateView):
     model = Schedule
     template_name = 'airline_app/schedule_form.html'
     form_class = ScheduleForm
     success_url = reverse_lazy('schedule-list')
-    
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         return context
@@ -458,12 +545,12 @@ def confirm_booking(request, pk):
         booking = get_object_or_404(Booking, pk=pk)
         booking.status = 'CONFIRMED'
         booking.save()
-        
+
         # Create a ticket if it doesn't exist
         if not hasattr(booking, 'ticket'):
-            # SQL: INSERT INTO airline_app_ticket 
-            # (seat_number, price, booking_status, passenger_id, flight_id, booking_id) 
-            # VALUES ({booking.seat_number}, 350.00, 'CONFIRMED', 
+            # SQL: INSERT INTO airline_app_ticket
+            # (seat_number, price, booking_status, passenger_id, flight_id, booking_id)
+            # VALUES ({booking.seat_number}, 350.00, 'CONFIRMED',
             # {booking.passenger.id}, {booking.flight.id}, {booking.id});
             Ticket.objects.create(
                 seat_number=booking.seat_number,
@@ -473,32 +560,39 @@ def confirm_booking(request, pk):
                 flight=booking.flight,
                 booking=booking
             )
-        
-        messages.success(request, f"Booking #{booking.booking_id} has been confirmed.")
+
+        messages.success(
+            request, f"Booking #{booking.booking_id} has been confirmed.")
         return redirect('booking-detail', pk=booking.pk)
     return redirect('booking-detail', pk=pk)
 
 # Payment stats for the payment list view
+
+
 def get_payment_stats():
     today = timezone.now()
-    start_of_month = today.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
-    
+    start_of_month = today.replace(
+        day=1, hour=0, minute=0, second=0, microsecond=0)
+
     # SQL: SELECT SUM(amount) FROM airline_app_payment;
     total_amount = Payment.objects.aggregate(Sum('amount'))['amount__sum'] or 0
-    
-    # SQL: SELECT SUM(amount) FROM airline_app_payment 
+
+    # SQL: SELECT SUM(amount) FROM airline_app_payment
     # WHERE payment_method = 'CREDIT_CARD';
-    credit_card_amount = Payment.objects.filter(payment_method='CREDIT_CARD').aggregate(Sum('amount'))['amount__sum'] or 0
-    
-    # SQL: SELECT SUM(amount) FROM airline_app_payment 
+    credit_card_amount = Payment.objects.filter(
+        payment_method='CREDIT_CARD').aggregate(Sum('amount'))['amount__sum'] or 0
+
+    # SQL: SELECT SUM(amount) FROM airline_app_payment
     # WHERE payment_date >= {start_of_month};
-    this_month_amount = Payment.objects.filter(payment_date__gte=start_of_month).aggregate(Sum('amount'))['amount__sum'] or 0
-    
+    this_month_amount = Payment.objects.filter(
+        payment_date__gte=start_of_month).aggregate(Sum('amount'))['amount__sum'] or 0
+
     # Calculate average amount
     # SQL: SELECT COUNT(*) FROM airline_app_payment;
     payment_count = Payment.objects.count()
-    average_amount = round(total_amount / payment_count, 2) if payment_count > 0 else 0
-    
+    average_amount = round(total_amount / payment_count,
+                           2) if payment_count > 0 else 0
+
     return {
         'total_amount': total_amount,
         'credit_card_amount': credit_card_amount,
@@ -508,15 +602,17 @@ def get_payment_stats():
 
 # Schedule calendar view helpers
 
+
 def get_calendar_data(year, month, schedules=None):
     today = date.today()
-    
+
     cal = calendar.monthcalendar(year, month)
-    # SQL: SELECT * FROM airline_app_schedule 
-    # WHERE EXTRACT(YEAR FROM date) = {year} 
+    # SQL: SELECT * FROM airline_app_schedule
+    # WHERE EXTRACT(YEAR FROM date) = {year}
     # AND EXTRACT(MONTH FROM date) = {month};
-    month_schedules = Schedule.objects.filter(date__year=year, date__month=month) if schedules is None else schedules
-    
+    month_schedules = Schedule.objects.filter(
+        date__year=year, date__month=month) if schedules is None else schedules
+
     # Group schedules by day
     scheduled_days = {}
     for schedule in month_schedules:
@@ -524,7 +620,7 @@ def get_calendar_data(year, month, schedules=None):
         if day not in scheduled_days:
             scheduled_days[day] = []
         scheduled_days[day].append(schedule)
-    
+
     # Prepare calendar data
     calendar_weeks = []
     for week in cal:
@@ -535,7 +631,7 @@ def get_calendar_data(year, month, schedules=None):
             else:
                 week_dict[day] = scheduled_days.get(day, [])
         calendar_weeks.append(week_dict)
-    
+
     # Calculate previous and next month
     if month == 1:
         prev_month = 12
@@ -543,14 +639,14 @@ def get_calendar_data(year, month, schedules=None):
     else:
         prev_month = month - 1
         prev_year = year
-    
+
     if month == 12:
         next_month = 1
         next_year = year + 1
     else:
         next_month = month + 1
         next_year = year
-    
+
     return {
         'calendar_weeks': calendar_weeks,
         'current_month': month,
@@ -571,9 +667,10 @@ def get_calendar_data(year, month, schedules=None):
 class CustomLoginView(LoginView):
     template_name = 'airline_app/login.html'
     redirect_authenticated_user = True
-    
+
     def get_success_url(self):
         return reverse_lazy('dashboard')
+
 
 def redirect_if_not_authenticated(view_func):
     def wrapper(request, *args, **kwargs):
@@ -582,7 +679,121 @@ def redirect_if_not_authenticated(view_func):
         return view_func(request, *args, **kwargs)
     return wrapper
 
+
 def custom_logout_view(request):
     """Custom view to handle logout via GET request"""
     logout(request)
     return redirect('login')
+
+
+@login_required
+def download_boarding_pass(request, pk):
+    """
+    Generates a simple boarding pass PDF (ReportLab). Falls back to downloadable HTML if reportlab not installed.
+    """
+    booking = get_object_or_404(Booking, pk=pk)
+
+    # Ensure a boarding pass exists
+    if not hasattr(booking, 'boarding_pass') or booking.boarding_pass is None:
+        messages.error(request, "No boarding pass issued for this booking.")
+        return redirect('booking-detail', pk=pk)
+
+    bp = booking.boarding_pass
+
+    # Try to create a PDF using reportlab
+    try:
+        from reportlab.pdfgen import canvas
+        from reportlab.lib.pagesizes import A4
+        from reportlab.lib.units import mm
+
+        buffer = io.BytesIO()
+        p = canvas.Canvas(buffer, pagesize=A4)
+        width, height = A4
+
+        # Styling / layout (simple)
+        left_margin = 20 * mm
+        top = height - 30 * mm
+
+        p.setFont("Helvetica-Bold", 18)
+        p.drawString(left_margin, top,
+                     f"{booking.flight.aircraft.airline} — BOARDING PASS")
+
+        p.setFont("Helvetica", 12)
+        y = top - 18
+        p.drawString(left_margin, y, f"Passenger: {booking.passenger.name}")
+        y -= 14
+        p.drawString(left_margin, y,
+                     f"Passport: {booking.passenger.passport_number or 'N/A'}")
+        y -= 18
+        p.drawString(left_margin, y, f"Booking Ref: #{booking.booking_id}")
+        y -= 18
+        p.drawString(
+            left_margin, y, f"Ticket ID: {booking.ticket.ticket_id if hasattr(booking, 'ticket') and booking.ticket else 'N/A'}")
+        y -= 18
+        p.drawString(left_margin, y, f"Flight: {booking.flight.flight_number}")
+        y -= 18
+        p.drawString(
+            left_margin, y, f"Route: {booking.flight.source_airport.airport_name} → {booking.flight.destination_airport.airport_name}")
+        y -= 18
+        p.drawString(
+            left_margin, y, f"Departure: {booking.flight.departure_time.strftime('%d %b %Y, %H:%M')}")
+        y -= 18
+        p.drawString(
+            left_margin, y, f"Gate: {bp.gate_number or 'TBD'}   Seat: {bp.seat_number or booking.seat_number or 'N/A'}")
+        y -= 26
+
+        # Simple barcode text (you can replace with a real barcode image later)
+        p.setFont("Helvetica-Bold", 10)
+        p.drawString(left_margin, y,
+                     f"BARCODE: {bp.barcode or booking.booking_id}")
+        y -= 26
+
+        # Optional footer
+        p.setFont("Helvetica-Oblique", 8)
+        p.drawString(left_margin, y,
+                     "Present this boarding pass at the gate. Safe travels!")
+
+        p.showPage()
+        p.save()
+        buffer.seek(0)
+
+        filename = f"boarding_pass_{booking.booking_id}.pdf"
+        response = HttpResponse(buffer, content_type='application/pdf')
+        response['Content-Disposition'] = f'attachment; filename="{filename}"'
+        return response
+
+    except Exception as e:
+        # If reportlab is missing or fails, render an HTML fallback and force download
+        html = render_to_string(
+            'airline_app/boarding_pass_download.html', {'booking': booking})
+        filename = f"boarding_pass_{booking.booking_id}.html"
+        response = HttpResponse(html, content_type='text/html')
+        response['Content-Disposition'] = f'attachment; filename="{filename}"'
+        return response
+
+
+@login_required
+def cancel_booking(request, pk):
+    booking = get_object_or_404(Booking, pk=pk)
+
+    if request.method == 'POST':
+
+        # Delete related Payment if exists
+        if hasattr(booking, 'payment') and booking.payment:
+            booking.payment.delete()
+
+        # Delete related Boarding Pass if exists
+        if hasattr(booking, 'boarding_pass') and booking.boarding_pass:
+            booking.boarding_pass.delete()
+
+        # Delete booking itself
+        booking.delete()
+
+        messages.success(
+            request,
+            f"Booking #{booking.booking_id} and all associated records have been deleted."
+        )
+        return redirect('booking-list')
+
+    # If GET request, just return to list
+    return redirect('booking-list')

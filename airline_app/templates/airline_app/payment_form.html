@@ -14,7 +14,7 @@
             
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <!-- Booking -->
-                <div>
+                <!-- <div>
                     <label for="{{ form.booking.id_for_label }}" class="block text-sm font-medium text-gray-700">Booking</label>
                     <div class="mt-1">
                         <select name="{{ form.booking.name }}" id="{{ form.booking.id_for_label }}" 
@@ -34,7 +34,17 @@
                     {% if form.booking.errors %}
                     <p class="mt-1 text-sm text-red-600">{{ form.booking.errors.0 }}</p>
                     {% endif %}
+                </div> -->
+                <div>
+                    <label for="{{ form.booking.id_for_label }}" class="block text-sm font-medium text-gray-700">Booking</label>
+                    <div class="mt-1">
+                        {{ form.booking }}
+                    </div>
+                    {% if form.booking.errors %}
+                    <p class="mt-1 text-sm text-red-600">{{ form.booking.errors.0 }}</p>
+                    {% endif %}
                 </div>
+                
                 
                 <!-- Amount -->
                 <div>
@@ -70,7 +80,7 @@
             </div>
             
             <!-- Selected Booking Information (displayed when booking is selected) -->
-            {% if form.booking.value %}
+            {% if booking %}
             <div class="bg-gray-50 p-4 rounded-md border border-gray-200">
                 <h3 class="text-lg font-medium text-gray-900 mb-3">Selected Booking Information</h3>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -93,6 +103,7 @@
                 </div>
             </div>
             {% endif %}
+
             
             <!-- Form actions -->
             <div class="flex justify-end pt-5 border-t border-gray-200 mt-6">
