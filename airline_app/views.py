@@ -595,9 +595,7 @@ def custom_logout_view(request):
 
 @login_required
 def download_boarding_pass(request, pk):
-    """
-    Generates a simple boarding pass PDF (ReportLab). Falls back to downloadable HTML if reportlab not installed.
-    """
+    
     booking = get_object_or_404(Booking, pk=pk)
 
     # Ensure a boarding pass exists
