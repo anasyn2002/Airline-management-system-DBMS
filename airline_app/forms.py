@@ -35,14 +35,6 @@ class PaymentForm(forms.ModelForm):
         model = Payment
         fields = ['booking', 'amount', 'payment_method']
 
-# class BoardingPassForm(forms.ModelForm):
-#     class Meta:
-#         model = BoardingPass
-#         fields = ['booking', 'gate_number', 'boarding_time', 'seat_number', 'flight', 'passenger', 'barcode']
-#         widgets = {
-#             'boarding_time': forms.DateTimeInput(attrs={'type': 'datetime-local'}),
-#         }
-
 
 class BoardingPassForm(forms.ModelForm):
     class Meta:
